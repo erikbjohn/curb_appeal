@@ -1,5 +1,5 @@
-tensorflow <- function(project_location='~/Dropbox/pkg.data/curb_appeal/', tensorflow_location='~/tensorflow/', classify_name='firstTry',
-                       training_dir='~/Dropbox/pkg.data/curb_appeal/Raw/TrainingPhotos/', prediction_dir='~/Dropbox/pkg.data/park.paper/raw/corelogic.photos'){
+tensorflow <- function(project_location='~/Dropbox/pkg.data/curb_appeal/', tensorflow_location='~/tensorflow/', classify_name='sriram',
+                       training_dir='~/Documents/TrainingPhotos_Sriram/', prediction_dir='~/Dropbox/pkg.data/park.paper/raw/corelogic.photos'){
   # Files already classified
   library(data.table)
   library(stringr)
@@ -16,7 +16,7 @@ tensorflow <- function(project_location='~/Dropbox/pkg.data/curb_appeal/', tenso
     # system('cd ~/tensorflow & bazel build tensorflow/examples/image_retraining:label_image')
     train <- list()
     bazel_location <- '~/tensorflow/bazel-bin/tensorflow/examples/image_retraining/retrain'
-    system(paste(bazel_location, '--image_dir', path.expand(paste0(project_location, training_dir))))
+    system(paste(bazel_location, '--image_dir', path.expand(training_dir)))
     # Saves graph to /tmp/output_graph.pb and /tmp/output_labels.txt
     file.copy('/tmp/output_graph.pb', to = graph_location, TRUE)
     file.copy('/tmp/output_labels.txt', to = labels_location, TRUE)
