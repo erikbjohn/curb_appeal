@@ -1,6 +1,7 @@
 # python3 label_image.py --graph=/home/ebjohnson5/Dropbox/pkg.data/curb_appeal/models/output_graph.pb --labels=/home/ebjohnson5/Dropbox/pkg.data/curb_appeal/models/output_labels.txt --input_layer=Placeholder --output_layer=final_result --image=/home/ebjohnson5/Dropbox/pkg.data/park.paper/raw/corelogic.photos/across-parcel_id.160434124-pano_id.r71YbMLftAjxHMd-55DrTg.jpg
 
 library(data.table)
+library(stringr)
 dt <- readRDS('~/Dropbox/pkg.data/curb_appeal/Data/johnson.rds')
 sample_pins <- dt[, .(pin=as.character(pin), sample_pin=pin)]
 
@@ -33,6 +34,7 @@ if (nrow(f.to.do)>0){
   
   iter <- 0
   for (i in integer.sample){
+    tic <- Sys.time()
     iter <- iter + 1
     #for (i in 1:10){
     cat(iter, 'of', nrow(f.to.do), '\n')
@@ -52,13 +54,15 @@ if (nrow(f.to.do)>0){
     dt.classes.new <- dt.classes.new[, val:=as.integer(val)]
     dt.classes.new$prob <- as.numeric(str_replace_all(dt.classes.new$prob, '\\)$', ''))
     print(dt.classes.new)
-    cat('\n')
+    cat('\n', Sys.time() - tic, '\n')
     if(file.exists(dt_classify_location)){
       dt_classify <- rbindlist(list(dt_classify, dt.classes.new), use.names = TRUE, fill=TRUE)
       saveRDS(dt_classify, dt_classify_location)
     } else {
       dt_classify <- dt.classes.new
-      saveRDS(dt.classes.new, dt_classify_location)
+      if((iter %% 100) == 0){
+        saveRDS(dt.classes.new, dt_classify_location)
+      }
     }
   }
   dt_classify <- unique(dt_classify[, .(pin, pano_id, type, fName, val=as.integer(val), prob)])
