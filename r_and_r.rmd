@@ -8,10 +8,10 @@ output: pdf_document
 ```{r setup, include=FALSE, results=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 f_list <- list.files('R', full.names = TRUE)
-library(xtable)
-library(data.table)
-library(nlcv)
-library(stringr)
+suppressMessages(library(xtable))
+suppressMessages(library(data.table))
+suppressMessages(library(nlcv))
+suppressMessages(library(stringr))
 lapply(f_list, function(x) source(x, verbose = FALSE))
 ```
 
@@ -31,7 +31,7 @@ In the paper given to the referee, we used 50 photos of each curb appeal class t
 
 We also provide links to all data, code and trained models that would be needed to replicate and verify our model. 
 
-The model files for replication as well as the python code are saved on our publically accesible dropbox page at \url{https://www.dropbox.com/sh/b5mhoovcqi9wjn1/AAD2W3NB5opvmrQDvayHKglka?dl=0}. The photos used for training may be found at \url{https://www.dropbox.com/sh/vatw6z3cc625q2a/AABGU3N6GKq2LRSStcBR_yCGa?dl=0}. We provide links to these sources in the paper. Importantly, this includes all code and data needed to replicate the training and model creation as well as the model itsself.
+The model, labels, python code and classified photos are saved on our publically accesible github page at \url{https://github.com/erikbjohn/curb_appeal/tree/master/Replication}.  We provide a link to the necessary replication files in the paper. Importantly, this includes all code and data needed to replicate the training and model creation as well as the model itsself.
 
 #### Transfer Learning Classifier
 
@@ -41,15 +41,10 @@ We include the following analysis in the paper and below.
 
 ##### In sample analysis
 
-```{r, results='asis'}
-#xtable::xtable(l$table)
-```
-
-First, we start with the out of sample classifier accuracy by manually labeling a set of photos. We selected photos until we had 100 out of sample photos in each of the 4 classifications. We start by comparing the 'ground-truth' scores that we manually labeled to their highest probability scores. This analysis is done using a confusion matrix that allows to show both power and size statistics. 
+First, we start with the out of sample classifier accuracy by manually labeling a set of photos. We selected photos until we had 100 out of sample photos in each of the 4 classifications. We start by comparing the 'ground-truth' scores that we manually labeled to their highest probability scores. This analysis is done using a confusion matrix that allows to illustrate the relationship between the Predicted and Reference estimates in Table \ref{insamp:confusion}. Overall statistics are shown in Table \ref{insamp:overall}.
 
 ```{r}
-source('R/r_and_r_out_of_sample_sriram.R')
-dt <- r_and_r_in_sample()
+dt <- suppressMessages(r_and_r_in_sample())
 l <- caret::confusionMatrix(as.factor(as.character(dt$max_val_predict)),
                            as.factor(dt$ground_truth_score))
 ```
@@ -61,8 +56,17 @@ dimnames(dt_conf) <- list(observed = paste("Prediction: ", attr(l[[2]], "dimname
 print(xtable(dt_conf, caption='In sample confusion Matrix', label='insamp:confusion'), comment='FALSE')
 ```
 
-Class diagnostics are provided in Table \ref{tbl:in_sample_class} and in the manuscript.
- 
+
+```{r, results='asis'}
+l_names <- names(l[[3]])
+dt_overall <- data.table(Statistic=l_names, Value = as.data.table(l[[3]]))
+dt_overall <- dt_overall[c(1,2,6)]
+print(xtable(dt_overall, caption='Overall Statisitics', label='insamp:overall'), comment='FALSE', include.rownames=FALSE)
+```
+
+
+Class diagnostics are provided in Table \ref{tbl:in_sample_class} and in the manuscript. Discussion of the diagnostics may be found at \url{https://topepo.github.io/caret/measuring-performance.html}. Importantly, Precision is the same as size and Recall corresponds to Power.
+
 ```{r, results='asis'}
 dt_class <- t(as.matrix(l[[4]]))
 attr(dt_class, "dimnames")[[1]] <- c("Sensitivity", "Specificity", "Pos Pred Value", "Neg Pred Value", "Precision", "Recall", "F1",                   "Prevalence", "Detect Rate", "Detect Prevalence", "Balanced Accuracy")
@@ -71,13 +75,50 @@ print(xtable(dt_class, caption='In sample Diagnostics by class', label='tbl:in_s
  
  
  
-### 
-```{r, eval=FALSE }
-source('R/r_and_r_out_of_sample.R')
-dt <- r_and_r_out_of_sample()
+##### Out of sample sample analysis
+
+We next examine out of sample analysis by manually scoring apporoximately 100 photos into each of the categories and compare the model predictions. The diagnostic statistics are similar to the in-sample training analysis, but with a bit less accuracy as is to be expected.
+
+Overall statistics are shown in Table \ref{outsamp:overall}.
+
+
+
+
+
+```{r}
+source('R/r_and_r_out_of_sample_sriram.R')
+dt <- suppressMessages(r_and_r_out_of_sample_sriram())
 l <- caret::confusionMatrix(as.factor(as.character(dt$max_val_predict)),
                            as.factor(dt$ground_truth_score))
 ```
+
+```{r, results='asis'}
+l_names <- names(l[[3]])
+dt_overall <- data.table(Statistic=l_names, Value = as.data.table(l[[3]]))
+dt_overall <- dt_overall[c(1,2,6)]
+print(xtable(dt_overall, caption='Overall Statisitics', label='outsamp:overall'), comment='FALSE', include.rownames=FALSE)
+```
+
+Class diagnostics are provided in Table \ref{tbl:out_sample_class} and in the manuscript. Discussion of the diagnostics may be found at \url{https://topepo.github.io/caret/measuring-performance.html}. Importantly, Precision is the same as size and Recall corresponds to Power.
+
+
+```{r, results='asis'}
+dt_conf <- as.matrix(l[[2]])
+dimnames(dt_conf) <- list(observed = paste("Prediction: ", attr(l[[2]], "dimnames")[[1]]),
+      predicted = paste("Reference: ", attr(l[[2]], "dimnames")[[1]])) 
+print(xtable(dt_conf, caption='Out of sample confusion Matrix', label='outSamp:confusion'), comment='FALSE')
+```
+
+
+```{r, results='asis'}
+dt_class <- t(as.matrix(l[[4]]))
+attr(dt_class, "dimnames")[[1]] <- c("Sensitivity", "Specificity", "Pos Pred Value", "Neg Pred Value", "Precision", "Recall", "F1",                   "Prevalence", "Detect Rate", "Detect Prevalence", "Balanced Accuracy")
+print(xtable(dt_class, caption='Out of sample Diagnostics by class', label='tbl:out_sample_class'), comment='FALSE', size=10)
+```
+
+Class diagnostics are provided in Table \ref{tbl:in_sample_class} and in the manuscript. Discussion of the diagnostics may be found at \url{https://topepo.github.io/caret/measuring-performance.html}. Importantly, Precision is the same as size and Recall corresponds to Power.
+
+\clearpage
 
 #### Out of sample performance - Regression
 
