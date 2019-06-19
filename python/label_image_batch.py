@@ -99,7 +99,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.graph:
-        model_file = args.graph
+        model_file = args.graaph
     if args.image:
         file_name = args.image
     if args.labels:
@@ -119,8 +119,8 @@ if __name__ == "__main__":
 
     #graph = load_graph(model_file)
 
-    os.chdir("/home/ebjohnson5/Data/tmp_photos2")
-
+    os.chdir("/home/ebjohnson5/Dropbox/pkg.data/curb_appeal/jrefe/r_and_r/out_of_samples/to_score")
+    #os.chdir("/home/ebjohnson5/Dropbox/Research/Conferences/2019_Vietnam/VietnamPictures")
     i = 0
     all_files = glob.glob('*.jpg')
     all_files.extend(glob.glob('*.JPG'))
@@ -164,8 +164,8 @@ if __name__ == "__main__":
                  #sess.close()
                 top_k = results.argsort()[-5:][::-1]
 
-                outfile = '/home/ebjohnson5/Data/tmp/' + file_name + '.csv'
-                #outfile = '/home/ebjohnson5/Dropbox/pkg.data/curb_appeal/numpy/test.csv'
+                #outfile = '/home/ebjohnson5/Data/tmp_RandR/' + file_name + '.csv'
+                outfile = '/home/ebjohnson5/Dropbox/pkg.data/curb_appeal/numpy/RandR.csv'
                 np.savetxt(outfile, results, delimiter=",")
                 #np.save(outfile, results)
                 for i in top_k:

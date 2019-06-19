@@ -5,8 +5,8 @@ library(stringr)
 dt <- readRDS('~/Dropbox/pkg.data/curb_appeal/Data/johnson.rds')
 sample_pins <- dt[, .(pin=as.character(pin), sample_pin=pin)]
 
-dt_classify_location <- '~/Dropbox/pkg.data/curb_appeal/Clean/sriram_retrain.rds'
-
+#dt_classify_location <- '~/Dropbox/pkg.data/curb_appeal/Clean/sriram_retrain.rds'
+dt_classify_location <- '~/Dropbox/Research/Conferences/2019_Vietnam/VietnamPictures.rds'
 if(file.exists(dt_classify_location)){
   dt_classify <- readRDS(dt_classify_location)
   files.complete <- unique(dt_classify$fName)
@@ -15,9 +15,9 @@ if(file.exists(dt_classify_location)){
 }
 
 # List of all possible files
-f.dir <- '~/Dropbox/pkg.data/park.paper/raw/corelogic.photos'
-f.list.path <- list.files(f.dir, full.names = TRUE)
-f.list <- list.files(f.dir)
+f.dir <- '~/Dropbox/Research/Conferences/2019_Vietnam/VietnamPictures/'
+f.list.path <- list.files(f.dir, full.names = TRUE, pattern='.jpg')
+f.list <- list.files(f.dir, pattern='.jpg')
 f.to.do <- data.table(f.name = f.list[which(!(f.list %in% files.complete))], f.path =f.list.path[which(!(f.list %in% files.complete))])
 f.to.do <- f.to.do[, parcel_id:=stringr::str_extract(f.name, '(?<=id\\.).+(?=\\-pano_id)')]
 f.to.do <- f.to.do[parcel_id %in% sample_pins$pin]
